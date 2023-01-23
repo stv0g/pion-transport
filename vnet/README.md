@@ -1,5 +1,5 @@
 # vnet
-A virtual network layer for pion.
+A virtual network layer for Pion.
 
 ## Overview
 
@@ -74,8 +74,8 @@ Net provides 3 interfaces:
 ## Implementation
 
 ### Design Policy
-* Each pion package should have config object which has `Net` (of type `transport.Net`) property.
-    - Just like how we distribute `LoggerFactory` throughout the pion project.
+* Each Pion package should have config object which has `Net` (of type `transport.Net`) property.
+    - Just like how we distribute `LoggerFactory` throughout the Pion project.
 * DNS => a simple dictionary (global)?
 * Each Net has routing capability (a goroutine)
 * Use interface provided net package as much as possible
