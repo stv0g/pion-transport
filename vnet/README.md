@@ -164,8 +164,9 @@ type Agent struct {
 }
 
 func NetAgent(config *AgentConfig) *Agent {
+    // Use standard net module
     if config.Net == nil {
-        config.Net = vnet.NewNet()
+        config.Net = stdnet.NewNet()
     }
     
     return &Agent {
