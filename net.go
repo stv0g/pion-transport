@@ -7,6 +7,8 @@ import (
 	"io"
 	"net"
 	"time"
+
+	"github.com/pion/logging"
 )
 
 var (
@@ -19,6 +21,87 @@ var (
 	// ErrNotUDPAddress ...
 	ErrNotUDPAddress = errors.New("not a UDP address")
 )
+
+// EndpointDependencyType defines a type of behavioral dependendency on the
+// remote endpoint's IP address or port number. This is used for the two
+// kinds of behaviors:
+//   - Port mapping behavior
+//   - Filtering behavior
+//
+// See: https://tools.ietf.org/html/rfc4787
+type EndpointDependencyType uint8
+
+const (
+	// EndpointIndependent means the behavior is independent of the endpoint's address or port
+	EndpointIndependent EndpointDependencyType = iota
+	// EndpointAddrDependent means the behavior is dependent on the endpoint's address
+	EndpointAddrDependent
+	// EndpointAddrPortDependent means the behavior is dependent on the endpoint's address and port
+	EndpointAddrPortDependent
+)
+
+// NATMode defines basic behavior of the NAT
+type NATMode uint8
+
+const (
+	// NATModeNormal means the NAT behaves as a standard NAPT (RFC 2663).
+	NATModeNormal NATMode = iota
+	// NATModeNAT1To1 exhibits 1:1 DNAT where the external IP address is statically mapped to
+	// a specific local IP address with port number is preserved always between them.
+	// When this mode is selected, MappingBehavior, FilteringBehavior, PortPreservation and
+	// MappingLifeTime of NATType are ignored.
+	NATModeNAT1To1
+)
+
+const (
+	DefaultNATMappingLifeTime = 30 * time.Second
+)
+
+// NATType has a set of parameters that define the behavior of NAT.
+type NATType struct {
+	Mode              NATMode
+	MappingBehavior   EndpointDependencyType
+	FilteringBehavior EndpointDependencyType
+	Hairpinning       bool // Not implemented yet
+	PortPreservation  bool // Not implemented yet
+	MappingLifeTime   time.Duration
+}
+
+type RouterConfig struct {
+	// Name of router. If not specified, a unique name will be assigned.
+	Name string
+	// CIDR notation, like "192.0.2.0/24"
+	CIDR string
+	// StaticIPs is an array of static IP addresses to be assigned for this router.
+	// If no static IP address is given, the router will automatically assign
+	// an IP address.
+	// This will be ignored if this router is the root.
+	StaticIPs []string
+	// StaticIP is deprecated. Use StaticIPs.
+	StaticIP string
+	// Internal queue size
+	QueueSize int
+	// Effective only when this router has a parent router
+	NATType *NATType
+	// Minimum Delay
+	MinDelay time.Duration
+	// Max Jitter
+	MaxJitter time.Duration
+	// Logger factory
+	LoggerFactory logging.LoggerFactory
+}
+
+type Router interface {
+	Start() error
+	Stop() error
+	AddNet(Net) error
+	AddRouter(Router) error
+}
+
+type Factory interface {
+	NewRouter(config *RouterConfig) (Router, error)
+	NewNet() (Net, error)
+}
 
 // Net is an interface providing common networking functions which are
 // similar to the functions provided by standard net package.

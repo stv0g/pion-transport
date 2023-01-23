@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/pion/logging"
+	"github.com/pion/transport/v2"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -19,17 +20,17 @@ const demoIP = "1.2.3.4"
 func TestNATTypeDefaults(t *testing.T) {
 	loggerFactory := logging.NewDefaultLoggerFactory()
 	nat, err := newNAT(&natConfig{
-		natType:       NATType{},
+		natType:       transport.NATType{},
 		mappedIPs:     []net.IP{net.ParseIP(demoIP)},
 		loggerFactory: loggerFactory,
 	})
 	assert.NoError(t, err, "should succeed")
 
-	assert.Equal(t, EndpointIndependent, nat.natType.MappingBehavior, "should match")
-	assert.Equal(t, EndpointIndependent, nat.natType.FilteringBehavior, "should match")
+	assert.Equal(t, transport.EndpointIndependent, nat.natType.MappingBehavior, "should match")
+	assert.Equal(t, transport.EndpointIndependent, nat.natType.FilteringBehavior, "should match")
 	assert.False(t, nat.natType.Hairpinning, "should be false")
 	assert.False(t, nat.natType.PortPreservation, "should be false")
-	assert.Equal(t, defaultNATMappingLifeTime, nat.natType.MappingLifeTime, "should be false")
+	assert.Equal(t, transport.DefaultNATMappingLifeTime, nat.natType.MappingLifeTime, "should be false")
 }
 
 func TestNATMappingBehavior(t *testing.T) {
@@ -38,9 +39,9 @@ func TestNATMappingBehavior(t *testing.T) {
 
 	t.Run("full-cone NAT", func(t *testing.T) {
 		nat, err := newNAT(&natConfig{
-			natType: NATType{
-				MappingBehavior:   EndpointIndependent,
-				FilteringBehavior: EndpointIndependent,
+			natType: transport.NATType{
+				MappingBehavior:   transport.EndpointIndependent,
+				FilteringBehavior: transport.EndpointIndependent,
 				Hairpinning:       false,
 				MappingLifeTime:   30 * time.Second,
 			},
@@ -130,9 +131,9 @@ func TestNATMappingBehavior(t *testing.T) {
 
 	t.Run("addr-restricted-cone NAT", func(t *testing.T) {
 		nat, err := newNAT(&natConfig{
-			natType: NATType{
-				MappingBehavior:   EndpointIndependent,
-				FilteringBehavior: EndpointAddrDependent,
+			natType: transport.NATType{
+				MappingBehavior:   transport.EndpointIndependent,
+				FilteringBehavior: transport.EndpointAddrDependent,
 				Hairpinning:       false,
 				MappingLifeTime:   30 * time.Second,
 			},
@@ -254,9 +255,9 @@ func TestNATMappingBehavior(t *testing.T) {
 
 	t.Run("port-restricted-cone NAT", func(t *testing.T) {
 		nat, err := newNAT(&natConfig{
-			natType: NATType{
-				MappingBehavior:   EndpointIndependent,
-				FilteringBehavior: EndpointAddrPortDependent,
+			natType: transport.NATType{
+				MappingBehavior:   transport.EndpointIndependent,
+				FilteringBehavior: transport.EndpointAddrPortDependent,
 				Hairpinning:       false,
 				MappingLifeTime:   30 * time.Second,
 			},
@@ -375,9 +376,9 @@ func TestNATMappingBehavior(t *testing.T) {
 
 	t.Run("symmetric NAT addr dependent mapping", func(t *testing.T) { //nolint:dupl
 		nat, err := newNAT(&natConfig{
-			natType: NATType{
-				MappingBehavior:   EndpointAddrDependent,
-				FilteringBehavior: EndpointAddrDependent,
+			natType: transport.NATType{
+				MappingBehavior:   transport.EndpointAddrDependent,
+				FilteringBehavior: transport.EndpointAddrDependent,
 				Hairpinning:       false,
 				MappingLifeTime:   30 * time.Second,
 			},
@@ -445,9 +446,9 @@ func TestNATMappingBehavior(t *testing.T) {
 
 	t.Run("symmetric NAT port dependent mapping", func(t *testing.T) { //nolint:dupl
 		nat, err := newNAT(&natConfig{
-			natType: NATType{
-				MappingBehavior:   EndpointAddrPortDependent,
-				FilteringBehavior: EndpointAddrPortDependent,
+			natType: transport.NATType{
+				MappingBehavior:   transport.EndpointAddrPortDependent,
+				FilteringBehavior: transport.EndpointAddrPortDependent,
 				Hairpinning:       false,
 				MappingLifeTime:   30 * time.Second,
 			},
@@ -520,9 +521,9 @@ func TestNATMappingTimeout(t *testing.T) {
 
 	t.Run("refresh on outbound", func(t *testing.T) {
 		nat, err := newNAT(&natConfig{
-			natType: NATType{
-				MappingBehavior:   EndpointIndependent,
-				FilteringBehavior: EndpointIndependent,
+			natType: transport.NATType{
+				MappingBehavior:   transport.EndpointIndependent,
+				FilteringBehavior: transport.EndpointIndependent,
 				Hairpinning:       false,
 				MappingLifeTime:   100 * time.Millisecond,
 			},
@@ -583,9 +584,9 @@ func TestNATMappingTimeout(t *testing.T) {
 
 	t.Run("outbound detects timeout", func(t *testing.T) {
 		nat, err := newNAT(&natConfig{
-			natType: NATType{
-				MappingBehavior:   EndpointIndependent,
-				FilteringBehavior: EndpointIndependent,
+			natType: transport.NATType{
+				MappingBehavior:   transport.EndpointIndependent,
+				FilteringBehavior: transport.EndpointIndependent,
 				Hairpinning:       false,
 				MappingLifeTime:   100 * time.Millisecond,
 			},
@@ -643,8 +644,8 @@ func TestNAT1To1Behavior(t *testing.T) {
 
 	t.Run("1:1 NAT with one mapping", func(t *testing.T) {
 		nat, err := newNAT(&natConfig{
-			natType: NATType{
-				Mode: NATModeNAT1To1,
+			natType: transport.NATType{
+				Mode: transport.NATModeNAT1To1,
 			},
 			mappedIPs:     []net.IP{net.ParseIP(demoIP)},
 			localIPs:      []net.IP{net.ParseIP("10.0.0.1")},
@@ -702,8 +703,8 @@ func TestNAT1To1Behavior(t *testing.T) {
 
 	t.Run("1:1 NAT with more than one mapping", func(t *testing.T) {
 		nat, err := newNAT(&natConfig{
-			natType: NATType{
-				Mode: NATModeNAT1To1,
+			natType: transport.NATType{
+				Mode: transport.NATModeNAT1To1,
 			},
 			mappedIPs: []net.IP{
 				net.ParseIP(demoIP),
@@ -791,8 +792,8 @@ func TestNAT1To1Behavior(t *testing.T) {
 	t.Run("1:1 NAT failure", func(t *testing.T) {
 		// 1:1 NAT requires more than one mapping
 		_, err := newNAT(&natConfig{
-			natType: NATType{
-				Mode: NATModeNAT1To1,
+			natType: transport.NATType{
+				Mode: transport.NATModeNAT1To1,
 			},
 			loggerFactory: loggerFactory,
 		})
@@ -800,8 +801,8 @@ func TestNAT1To1Behavior(t *testing.T) {
 
 		// 1:1 NAT requires the same number of mappedIPs and localIPs
 		_, err = newNAT(&natConfig{
-			natType: NATType{
-				Mode: NATModeNAT1To1,
+			natType: transport.NATType{
+				Mode: transport.NATModeNAT1To1,
 			},
 			mappedIPs: []net.IP{
 				net.ParseIP(demoIP),
@@ -817,8 +818,8 @@ func TestNAT1To1Behavior(t *testing.T) {
 		// drop outbound or inbound chunk with no route in 1:1 NAT
 
 		nat, err := newNAT(&natConfig{
-			natType: NATType{
-				Mode: NATModeNAT1To1,
+			natType: transport.NATType{
+				Mode: transport.NATModeNAT1To1,
 			},
 			mappedIPs: []net.IP{
 				net.ParseIP(demoIP),

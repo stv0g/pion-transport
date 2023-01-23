@@ -39,31 +39,6 @@ var assignRouterName = func() func() string { //nolint:gochecknoglobals
 	}
 }()
 
-// RouterConfig ...
-type RouterConfig struct {
-	// Name of router. If not specified, a unique name will be assigned.
-	Name string
-	// CIDR notation, like "192.0.2.0/24"
-	CIDR string
-	// StaticIPs is an array of static IP addresses to be assigned for this router.
-	// If no static IP address is given, the router will automatically assign
-	// an IP address.
-	// This will be ignored if this router is the root.
-	StaticIPs []string
-	// StaticIP is deprecated. Use StaticIPs.
-	StaticIP string
-	// Internal queue size
-	QueueSize int
-	// Effective only when this router has a parent router
-	NATType *NATType
-	// Minimum Delay
-	MinDelay time.Duration
-	// Max Jitter
-	MaxJitter time.Duration
-	// Logger factory
-	LoggerFactory logging.LoggerFactory
-}
-
 // NIC is a network interface controller that interfaces Router
 type NIC interface {
 	getInterface(ifName string) (*transport.Interface, error)
@@ -87,7 +62,7 @@ type Router struct {
 	queue          *chunkQueue               // read-only
 	parent         *Router                   // read-only
 	children       []*Router                 // read-only
-	natType        *NATType                  // read-only
+	natType        *transport.NATType        // read-only
 	nat            *networkAddressTranslator // read-only
 	nics           map[string]NIC            // read-only
 	stopFunc       func()                    // requires mutex [x]
@@ -102,7 +77,7 @@ type Router struct {
 }
 
 // NewRouter ...
-func NewRouter(config *RouterConfig) (*Router, error) {
+func NewRouter(config *transport.RouterConfig) (*Router, error) {
 	loggerFactory := config.LoggerFactory
 	log := loggerFactory.NewLogger("vnet")
 
@@ -585,9 +560,9 @@ func (r *Router) setRouter(parent *Router) error {
 
 	// Set up NAT here
 	if r.natType == nil {
-		r.natType = &NATType{
-			MappingBehavior:   EndpointIndependent,
-			FilteringBehavior: EndpointAddrPortDependent,
+		r.natType = &transport.NATType{
+			MappingBehavior:   transport.EndpointIndependent,
+			FilteringBehavior: transport.EndpointAddrPortDependent,
 			Hairpinning:       false,
 			PortPreservation:  false,
 			MappingLifeTime:   30 * time.Second,

@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/pion/logging"
+	"github.com/pion/transport/v2"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -46,7 +47,7 @@ func TestRouterStandalone(t *testing.T) {
 	log := loggerFactory.NewLogger("test")
 
 	t.Run("CIDR parsing", func(t *testing.T) {
-		r, err := NewRouter(&RouterConfig{
+		r, err := NewRouter(&transport.RouterConfig{
 			CIDR:          "1.2.3.0/24",
 			LoggerFactory: loggerFactory,
 		})
@@ -59,7 +60,7 @@ func TestRouterStandalone(t *testing.T) {
 	})
 
 	t.Run("assignIPAddress", func(t *testing.T) {
-		r, err := NewRouter(&RouterConfig{
+		r, err := NewRouter(&transport.RouterConfig{
 			CIDR:          "1.2.3.0/24",
 			LoggerFactory: loggerFactory,
 		})
@@ -81,7 +82,7 @@ func TestRouterStandalone(t *testing.T) {
 	})
 
 	t.Run("AddNet", func(t *testing.T) {
-		r, err := NewRouter(&RouterConfig{
+		r, err := NewRouter(&transport.RouterConfig{
 			CIDR:          "1.2.3.0/24",
 			LoggerFactory: loggerFactory,
 		})
@@ -110,7 +111,7 @@ func TestRouterStandalone(t *testing.T) {
 	})
 
 	t.Run("AddChildRouter", func(t *testing.T) {
-		r1, err := NewRouter(&RouterConfig{
+		r1, err := NewRouter(&transport.RouterConfig{
 			CIDR:          "0.0.0.0/0",
 			LoggerFactory: loggerFactory,
 		})
@@ -118,7 +119,7 @@ func TestRouterStandalone(t *testing.T) {
 			return
 		}
 
-		r2, err := NewRouter(&RouterConfig{
+		r2, err := NewRouter(&transport.RouterConfig{
 			CIDR: "192.168.0.0/24",
 			StaticIPs: []string{
 				"192.168.0.1",
@@ -140,7 +141,7 @@ func TestRouterStandalone(t *testing.T) {
 	t.Run("routing", func(t *testing.T) {
 		var nCbs0 int32
 		doneCh := make(chan struct{})
-		r, err := NewRouter(&RouterConfig{
+		r, err := NewRouter(&transport.RouterConfig{
 			CIDR:          "1.2.3.0/24",
 			LoggerFactory: loggerFactory,
 		})
@@ -202,7 +203,7 @@ func TestRouterStandalone(t *testing.T) {
 	t.Run("AddChunkFilter", func(t *testing.T) {
 		var nCbs0 int32
 		var nCbs1 int32
-		r, err := NewRouter(&RouterConfig{
+		r, err := NewRouter(&transport.RouterConfig{
 			CIDR:          "1.2.3.0/24",
 			LoggerFactory: loggerFactory,
 		})
@@ -303,7 +304,7 @@ func TestRouterDelay(t *testing.T) {
 			const margin = 8 * time.Millisecond
 			var nCBs int32
 			doneCh := make(chan struct{})
-			r, err := NewRouter(&RouterConfig{
+			r, err := NewRouter(&transport.RouterConfig{
 				CIDR:          "1.2.3.0/24",
 				MinDelay:      minDelay,
 				MaxJitter:     maxJitter,
@@ -396,7 +397,7 @@ func TestRouterOneChild(t *testing.T) {
 		doneCh := make(chan struct{})
 
 		// WAN
-		wan, err := NewRouter(&RouterConfig{
+		wan, err := NewRouter(&transport.RouterConfig{
 			CIDR:          "1.2.3.0/24",
 			LoggerFactory: loggerFactory,
 		})
@@ -423,7 +424,7 @@ func TestRouterOneChild(t *testing.T) {
 		log.Debugf("wanIP: %s", wanIP)
 
 		// LAN
-		lan, err := NewRouter(&RouterConfig{
+		lan, err := NewRouter(&transport.RouterConfig{
 			CIDR:          "192.168.0.0/24",
 			LoggerFactory: loggerFactory,
 		})
@@ -501,7 +502,7 @@ func TestRouterStaticIPs(t *testing.T) {
 	// log := loggerFactory.NewLogger("test")
 
 	t.Run("more than one static IP", func(t *testing.T) {
-		lan, err := NewRouter(&RouterConfig{
+		lan, err := NewRouter(&transport.RouterConfig{
 			CIDR: "192.168.0.0/24",
 			StaticIPs: []string{
 				"1.2.3.1",
@@ -521,7 +522,7 @@ func TestRouterStaticIPs(t *testing.T) {
 	})
 
 	t.Run("StaticIPs and StaticIP in the mix", func(t *testing.T) {
-		lan, err := NewRouter(&RouterConfig{
+		lan, err := NewRouter(&transport.RouterConfig{
 			CIDR: "192.168.0.0/24",
 			StaticIPs: []string{
 				"1.2.3.1",
@@ -543,7 +544,7 @@ func TestRouterStaticIPs(t *testing.T) {
 	})
 
 	t.Run("Static IP and local IP mapping", func(t *testing.T) {
-		lan, err := NewRouter(&RouterConfig{
+		lan, err := NewRouter(&transport.RouterConfig{
 			CIDR: "192.168.0.0/24",
 			StaticIPs: []string{
 				"1.2.3.1/192.168.0.1",
@@ -567,7 +568,7 @@ func TestRouterStaticIPs(t *testing.T) {
 		}
 
 		// bad local IP
-		_, err = NewRouter(&RouterConfig{
+		_, err = NewRouter(&transport.RouterConfig{
 			CIDR: "192.168.0.0/24",
 			StaticIPs: []string{
 				"1.2.3.1/192.168.0.1",
@@ -578,7 +579,7 @@ func TestRouterStaticIPs(t *testing.T) {
 		assert.Error(t, err, "should fail")
 
 		// local IP out of CIDR
-		_, err = NewRouter(&RouterConfig{
+		_, err = NewRouter(&transport.RouterConfig{
 			CIDR: "192.168.0.0/24",
 			StaticIPs: []string{
 				"1.2.3.1/192.168.0.1",
@@ -589,7 +590,7 @@ func TestRouterStaticIPs(t *testing.T) {
 		assert.Error(t, err, "should fail")
 
 		// num of local IPs mismatch
-		_, err = NewRouter(&RouterConfig{
+		_, err = NewRouter(&transport.RouterConfig{
 			CIDR: "192.168.0.0/24",
 			StaticIPs: []string{
 				"1.2.3.1/192.168.0.1",
@@ -601,21 +602,21 @@ func TestRouterStaticIPs(t *testing.T) {
 	})
 
 	t.Run("1:1 NAT configuration", func(t *testing.T) {
-		wan, err := NewRouter(&RouterConfig{
+		wan, err := NewRouter(&transport.RouterConfig{
 			CIDR:          "0.0.0.0/0",
 			LoggerFactory: loggerFactory,
 		})
 		assert.NoError(t, err, "should succeed")
 
-		lan, err := NewRouter(&RouterConfig{
+		lan, err := NewRouter(&transport.RouterConfig{
 			CIDR: "192.168.0.0/24",
 			StaticIPs: []string{
 				"1.2.3.1/192.168.0.1",
 				"1.2.3.2/192.168.0.2",
 				"1.2.3.3/192.168.0.3",
 			},
-			NATType: &NATType{
-				Mode: NATModeNAT1To1,
+			NATType: &transport.NATType{
+				Mode: transport.NATModeNAT1To1,
 			},
 			LoggerFactory: loggerFactory,
 		})
@@ -646,7 +647,7 @@ func TestRouterFailures(t *testing.T) {
 	// log := loggerFactory.NewLogger("test")
 
 	t.Run("Stop when router is stopped", func(t *testing.T) {
-		r, err := NewRouter(&RouterConfig{
+		r, err := NewRouter(&transport.RouterConfig{
 			CIDR:          "1.2.3.0/24",
 			LoggerFactory: loggerFactory,
 		})
@@ -659,7 +660,7 @@ func TestRouterFailures(t *testing.T) {
 	})
 
 	t.Run("AddNet", func(t *testing.T) {
-		r, err := NewRouter(&RouterConfig{
+		r, err := NewRouter(&transport.RouterConfig{
 			CIDR:          "1.2.3.0/24",
 			LoggerFactory: loggerFactory,
 		})
@@ -681,7 +682,7 @@ func TestRouterFailures(t *testing.T) {
 	})
 
 	t.Run("AddRouter", func(t *testing.T) {
-		r1, err := NewRouter(&RouterConfig{
+		r1, err := NewRouter(&transport.RouterConfig{
 			CIDR:          "1.2.3.0/24",
 			LoggerFactory: loggerFactory,
 		})
@@ -689,7 +690,7 @@ func TestRouterFailures(t *testing.T) {
 			return
 		}
 
-		r2, err := NewRouter(&RouterConfig{
+		r2, err := NewRouter(&transport.RouterConfig{
 			CIDR: "192.168.0.0/24",
 			StaticIPs: []string{
 				"5.6.7.8", // out of parent router'c CIDR
@@ -706,7 +707,7 @@ func TestRouterFailures(t *testing.T) {
 	})
 
 	t.Run("AddChildRouterWithoutAddNet", func(t *testing.T) {
-		r1, err := NewRouter(&RouterConfig{
+		r1, err := NewRouter(&transport.RouterConfig{
 			CIDR:          "1.2.3.0/24",
 			LoggerFactory: loggerFactory,
 		})
@@ -714,7 +715,7 @@ func TestRouterFailures(t *testing.T) {
 			return
 		}
 
-		r2, err := NewRouter(&RouterConfig{
+		r2, err := NewRouter(&transport.RouterConfig{
 			CIDR: "192.168.0.0/24",
 			StaticIPs: []string{
 				"5.6.7.8", // out of parent router'c CIDR

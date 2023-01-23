@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/pion/logging"
+	"github.com/pion/transport/v2"
 	"github.com/pion/transport/v2/test"
 	"github.com/stretchr/testify/assert"
 )
@@ -21,7 +22,7 @@ func TestStressTestUDP(t *testing.T) {
 		defer tt.Stop()
 
 		// WAN with a nic (net0)
-		wan, err := NewRouter(&RouterConfig{
+		wan, err := NewRouter(&transport.RouterConfig{
 			CIDR:          "1.2.3.0/24",
 			QueueSize:     1000,
 			LoggerFactory: loggerFactory,
@@ -39,7 +40,7 @@ func TestStressTestUDP(t *testing.T) {
 		assert.NoError(t, err, "should succeed")
 
 		// LAN with a nic (net1)
-		lan, err := NewRouter(&RouterConfig{
+		lan, err := NewRouter(&transport.RouterConfig{
 			CIDR:          "192.168.0.0/24",
 			QueueSize:     1000,
 			LoggerFactory: loggerFactory,

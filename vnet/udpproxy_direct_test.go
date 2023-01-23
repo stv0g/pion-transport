@@ -13,6 +13,7 @@ import (
 	"time"
 
 	"github.com/pion/logging"
+	"github.com/pion/transport/v2"
 )
 
 // The vnet client:
@@ -75,7 +76,7 @@ func TestUDPProxyDirectDeliverTypical(t *testing.T) {
 		}
 
 		doVnetProxy := func() error {
-			router, err := NewRouter(&RouterConfig{
+			router, err := NewRouter(&transport.RouterConfig{
 				CIDR:          "0.0.0.0/0",
 				LoggerFactory: logging.NewDefaultLoggerFactory(),
 			})
@@ -228,7 +229,7 @@ func TestUDPProxyDirectDeliverBadCase(t *testing.T) {
 		}
 
 		doVnetProxy := func() error {
-			router, err := NewRouter(&RouterConfig{
+			router, err := NewRouter(&transport.RouterConfig{
 				CIDR:          "0.0.0.0/0",
 				LoggerFactory: logging.NewDefaultLoggerFactory(),
 			})

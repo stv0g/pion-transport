@@ -404,7 +404,7 @@ func TestNetVirtual(t *testing.T) {
 	})
 
 	t.Run("Dial (UDP) eth0", func(t *testing.T) {
-		wan, err := NewRouter(&RouterConfig{
+		wan, err := NewRouter(&transport.RouterConfig{
 			CIDR:          "1.2.3.0/24",
 			LoggerFactory: loggerFactory,
 		})
@@ -468,7 +468,7 @@ func TestNetVirtual(t *testing.T) {
 	})
 
 	t.Run("Resolver", func(t *testing.T) {
-		wan, err := NewRouter(&RouterConfig{
+		wan, err := NewRouter(&transport.RouterConfig{
 			CIDR:          "1.2.3.0/24",
 			LoggerFactory: loggerFactory,
 		})
@@ -571,7 +571,7 @@ func TestNetVirtual(t *testing.T) {
 		doneCh := make(chan struct{})
 
 		// WAN
-		wan, err := NewRouter(&RouterConfig{
+		wan, err := NewRouter(&transport.RouterConfig{
 			CIDR:          "1.2.3.0/24",
 			LoggerFactory: loggerFactory,
 		})
@@ -708,7 +708,7 @@ func TestNetVirtual(t *testing.T) {
 		doneCh := make(chan struct{})
 
 		// WAN
-		wan, err := NewRouter(&RouterConfig{
+		wan, err := NewRouter(&transport.RouterConfig{
 			CIDR:          "1.2.3.0/24",
 			LoggerFactory: loggerFactory,
 		})

@@ -15,6 +15,7 @@ import (
 	"time"
 
 	"github.com/pion/logging"
+	"github.com/pion/transport/v2"
 )
 
 type MockUDPEchoServer struct {
@@ -148,7 +149,7 @@ func TestUDPProxyOne2One(t *testing.T) {
 		}
 
 		doVnetProxy := func() error {
-			router, err := NewRouter(&RouterConfig{
+			router, err := NewRouter(&transport.RouterConfig{
 				CIDR:          "0.0.0.0/0",
 				LoggerFactory: logging.NewDefaultLoggerFactory(),
 			})
@@ -301,7 +302,7 @@ func TestUDPProxyTwo2One(t *testing.T) {
 		}
 
 		doVnetProxy := func() error {
-			router, err := NewRouter(&RouterConfig{
+			router, err := NewRouter(&transport.RouterConfig{
 				CIDR:          "0.0.0.0/0",
 				LoggerFactory: logging.NewDefaultLoggerFactory(),
 			})
@@ -489,7 +490,7 @@ func TestUDPProxyProxyTwice(t *testing.T) {
 		}
 
 		doVnetProxy := func() error {
-			router, err := NewRouter(&RouterConfig{
+			router, err := NewRouter(&transport.RouterConfig{
 				CIDR:          "0.0.0.0/0",
 				LoggerFactory: logging.NewDefaultLoggerFactory(),
 			})
