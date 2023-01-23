@@ -16,33 +16,30 @@ A virtual network layer for pion.
 
 #### Top View
 ```
-                           ......................................
-                           :         Virtual Network (vnet)     :
-                           :                                    :
-   +-------+ *         1 +----+         +--------+              :
-   | :App  |------------>|:Net|--o<-----|:Router |              :
-   +-------+             +----+         |        |              :
-   +-----------+ *     1 +----+         |        |              :
-   |:STUNServer|-------->|:Net|--o<-----|        |              :
-   +-----------+         +----+         |        |              :
-   +-----------+ *     1 +----+         |        |              :
-   |:TURNServer|-------->|:Net|--o<-----|        |              :
-   +-----------+         +----+ [1]     |        |              :
-                           :          1 |        | 1  <<has>>   :
-                           :      +---<>|        |<>----+ [2]   :
-                           :      |     +--------+      |       :
-                         To form  |      *|             v 0..1  :
-                   a subnet tree  |       o [3]      +-----+    :
-                           :      |       ^          |:NAT |    :
-                           :      |       |          +-----+    :
-                           :      +-------+                     :
-                           ......................................
-    Note:
-        o: NIC (Network Interface Controller)
-      [1]: Net implements NIC interface.
-      [2]: Root router has no NAT. All child routers have a NAT always.
-      [3]: Router implements NIC interface for accesses from the
-           parent router.
+                            ┌────────────────────────────────────┐
+                            │         Virtual Network (vnet)     │
+    ┌───────────┐*      1 ┌─┴──┐         ┌────────┐              │
+    │:App       ├────────►│:Net├──o◄─────┤:Router │              │
+    └───────────┘         └────┘         │        │              │
+    ┌───────────┐*      1 ┌────┐         │        │              │
+    │:STUNServer├────────►│:Net├──o◄─────┤        │              │
+    └───────────┘         └────┘         │        │              │
+    ┌───────────┐*      1 ┌────┐         │        │              │
+    │:TURNServer├────────►│:Net├──o◄─────┤        │              │
+    └───────────┘         └─┬──┘ [1]   1 │        │ 1  <<has>>   │
+                            │      ┌──-<>│        │<>────┐ [2]   │
+                            │      │     └─┬──────┘      │       │
+                          To form  │      *│             ▼ 0..1  │
+                    a subnet tree  │       o [3]      ┌─────┐    │
+                            │      │       ▲          │:NAT │    │
+                            │      └───────┘          └─────┘    │
+                            └────────────────────────────────────┘
+     Notes:
+         o: NIC (Network Interface Controller)
+       [1]: Net implements NIC interface.
+       [2]: Root router has no NAT. All child routers have a NAT always.
+       [3]: Router implements NIC interface for accesses from the
+            parent router.
 ```
 
 #### Net
@@ -50,23 +47,24 @@ Net provides 3 interfaces:
 * Configuration API (direct)
 * Network API via Net (equivalent to net.Xxx())
 * Router access via NIC interface
+  
 ```
-                   (Pion module/app, ICE servers, etc.)
-                             +-----------+
-                             |   :App    |
-                             +-----------+
-                                 * | 
-                                   | <<uses>>
-                                 1 v
-   +---------+ 1           * +-----------+ 1    * +-----------+ 1    * +------+
- ..| :Router |----+------>o--|   :Net    |<>------|:Interface |<>------|:Addr |
-   +---------+    |      NIC +-----------+        +-----------+        +------+
-                  | <<interface>>             (transport.Interface)   (net.Addr)
-                  |
-                  |        * +-----------+ 1    * +-----------+ 1    * +------+
-                  +------>o--|  :Router  |<>------|:Interface |<>------|:Addr |
-                         NIC +-----------+        +-----------+        +------+
-                    <<interface>>            (transport.Interface)    (net.Addr)
+                    (Pion module/app, ICE servers, etc.)
+                              ┌───────────┐
+                              │   :App    │
+                              └─────┬─────┘
+                                  * │
+                                    │ <<uses>>
+                                  1 ▼
+    ┌─────────┐ 1           * ┌───────────┐ 1    * ┌───────────┐ 1    * ┌──────┐
+  ..│ :Router ├────┬──────►o──┤   :Net    │<>──────┤:Interface │<>──────┤:Addr │
+    └─────────┘    │      NIC └───────────┘        └───────────┘        └──────┘
+                   │ <<interface>>             (transport.Interface)   (net.Addr)
+                   │
+                   │        * ┌───────────┐ 1    * ┌───────────┐ 1    * ┌──────┐
+                   └──────►o──┤  :Router  │<>──────┤:Interface │<>──────┤:Addr │
+                          NIC └───────────┘        └───────────┘        └──────┘
+                     <<interface>>            (transport.Interface)    (net.Addr)
 ```
 
 > The instance of `Net` will be the one passed around the project.
